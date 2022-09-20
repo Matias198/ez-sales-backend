@@ -1,4 +1,2 @@
-# ez-sales-backend
-# ez-sales-backend
-# ez-sales-backend
-# ez-sales-backend
+# EZ Sales API
+## Desarrollado con Springboot y Java
