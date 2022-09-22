@@ -1,9 +1,7 @@
 package com.unam.tf.service;
 
 import java.util.List;
-
 import com.unam.tf.model.Cliente;
-
 
 public interface IClienteService {
 

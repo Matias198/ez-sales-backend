@@ -6,7 +6,6 @@ import com.unam.tf.model.Cliente;
 import com.unam.tf.repository.ClienteRepository;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,14 +35,16 @@ public class ClienteService implements IClienteService{
         return clienteRepository.findAll();
     }     
     
+    @Override
     public Cliente getClienteJson(String clienteJson){
         Cliente clienteFinal = new Cliente();
         try{
             ObjectMapper objectMapper = new ObjectMapper();
             clienteFinal = objectMapper.readValue(clienteJson, Cliente.class);
+            return clienteFinal;
         }catch (Exception e){
-            System.out.println("Error en el mapeo de objeto Cliente");
+            System.out.println("Error en el mapeo de objeto cliente");
+            return null;
         }
-        return clienteFinal;
     }
 }

@@ -5,6 +5,8 @@
     <class>com.unam.tf.security.entity.UsuarioJwt</class>
     <class>com.unam.tf.security.entity.Rol</class>
     <class>com.unam.tf.model.Cliente</class>
+    <class>com.unam.tf.model.Mail</class>
+    <class>com.unam.tf.model.Ubicacion</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/ezsales-database?serverTimezone=UTC"/>
       <property name="javax.persistence.jdbc.user" value="admin"/>
