@@ -43,7 +43,7 @@ public class ClienteService implements IClienteService{
             clienteFinal = objectMapper.readValue(clienteJson, Cliente.class);
             return clienteFinal;
         }catch (Exception e){
-            System.out.println("Error en el mapeo de objeto cliente");
+            System.out.println("Error en el mapeo de objeto cliente: "+ e.getMessage() + " causa: " + e.getCause());
             return null;
         }
     }

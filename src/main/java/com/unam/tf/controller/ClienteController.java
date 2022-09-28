@@ -182,7 +182,7 @@ public class ClienteController {
                 try {
                     byte[] byteBanner = uService.getClienteAsociado(dniCliente).getFotoBanner();
                     byte[] bytePerfil = uService.getClienteAsociado(dniCliente).getFotoPerfil();
-                    /*
+                    
                     //Perfil
                     String nombrePerfil = UUID.randomUUID().toString() +"_"+dniCliente+".png";
                     Path pathPerfil = Paths.get("uploads").resolve(nombrePerfil).toAbsolutePath();
@@ -200,7 +200,7 @@ public class ClienteController {
                     ImageIO.write(imgBanner, "png", fileimgBanner);
 
                     System.out.println("Imagenes guardadas localmente en uploads");
-                    */
+                    
                     ImgDto imgDto = new ImgDto();
                     Set<byte[]> setBytes = new HashSet<>();
                     setBytes.add(bytePerfil);

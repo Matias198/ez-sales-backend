@@ -2,11 +2,11 @@ package com.unam.tf.security.controller;
 
 import com.unam.tf.model.Cliente;
 import com.unam.tf.model.Mail;
-import com.unam.tf.model.Ubicacion;
+import com.unam.tf.model.Ubicacion; 
 import com.unam.tf.security.dto.JwtDto;
-import com.unam.tf.security.dto.LoginUsuario;
+import com.unam.tf.security.dto.LoginUsuario; 
 import com.unam.tf.security.dto.Mensaje;
-import com.unam.tf.security.dto.NuevoUsuario;
+import com.unam.tf.security.dto.NuevoUsuario; 
 import com.unam.tf.security.entity.Rol;
 import com.unam.tf.security.entity.UsuarioJwt;
 import com.unam.tf.security.enums.RolNombre;
@@ -21,14 +21,12 @@ import com.unam.tf.service.UbicacionService;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+ 
+import javax.validation.Valid; 
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatus; 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,8 +36,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.GetMapping; 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,7 +50,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin
 public class AuthController {
 
     @Value("${spring.mail.username}")
@@ -85,11 +81,36 @@ public class AuthController {
 
     @Autowired
     SendMailService sendMailService;
-
+ 
     @RequestMapping(value = "nuevoUsuario", method = RequestMethod.POST, consumes = {"multipart/form-data"})
     @ResponseBody   
-    public ResponseEntity<?> nuevoUsuario(@RequestPart String clienteJson, @RequestPart String mailJson, @RequestPart String ubicacionJson, @RequestPart NuevoUsuario nuevoUsuario, @RequestPart("fotoP") @Valid @NotNull @NotBlank MultipartFile fotoP, @RequestPart("fotoB") @Valid @NotNull @NotBlank MultipartFile fotoB, BindingResult bindingResult) {
+    public ResponseEntity<?> nuevoUsuario(@RequestPart String clienteJson, @RequestPart String mailJson, @RequestPart String ubicacionJson, @RequestPart String nuevoUsuarioJson, @RequestPart MultipartFile fotoP, @RequestPart MultipartFile fotoB, BindingResult bindingResult) {
         try {
+            System.out.println(clienteJson);
+            System.out.println(mailJson);
+            System.out.println(ubicacionJson);
+            System.out.println(nuevoUsuarioJson);
+            System.out.println(fotoP);
+            System.out.println(fotoB);
+
+            Cliente clienteTemp = new Cliente();
+            Mail mailTemp = new Mail();
+            Ubicacion ubicacionTemp = new Ubicacion();
+
+            System.out.println("Mapeando clienteJson --> cliente");
+            Cliente cliente = clienteService.getClienteJson(clienteJson);
+            cliente.setId(clienteTemp.getId());
+
+            System.out.println("Mapeando ubicacionJson --> ubicacion");
+            Ubicacion ubicacion = ubicacionService.getUbicacionJson(ubicacionJson);
+            ubicacion.setId(ubicacionTemp.getId());
+
+            System.out.println("Mapeando mailJson --> mail");
+            Mail mail = mailService.getMailJson(mailJson);
+            mail.setId(mailTemp.getId());
+
+            NuevoUsuario nuevoUsuario = usuarioService.getNuevoUsuarioJson(nuevoUsuarioJson); 
+            nuevoUsuario.getDni();
             System.out.println("Verificando errores en los campos");
             if (bindingResult.hasErrors()) {
                 return new ResponseEntity<Mensaje>(new Mensaje("Error en los campos."), HttpStatus.BAD_REQUEST);
@@ -120,25 +141,9 @@ public class AuthController {
             if (nuevoUsuario.getRoles().contains("cliente")) {
                 roles.add(rolService.getByRolNombre(RolNombre.ROL_CLIENTE).get());
             }
+            usuario.setRoles(roles);                           
             
-            usuario.setRoles(roles);
 
-            Cliente clienteTemp = new Cliente();
-            Mail mailTemp = new Mail();
-            Ubicacion ubicacionTemp = new Ubicacion();
-
-            System.out.println("Mapeando clienteJson --> cliente");
-            Cliente cliente = clienteService.getClienteJson(clienteJson);
-            cliente.setId(clienteTemp.getId());
-
-            System.out.println("Mapeando ubicacionJson --> ubicacion");
-            Ubicacion ubicacion = ubicacionService.getUbicacionJson(ubicacionJson);
-            ubicacion.setId(ubicacionTemp.getId());
-
-            System.out.println("Mapeando mailJson --> mail");
-            Mail mail = mailService.getMailJson(mailJson);
-            mail.setId(mailTemp.getId());            
-            //
             if ((!fotoP.isEmpty()) && (!fotoB.isEmpty())) {
 
                 byte[] bytesPerfil = fotoP.getBytes();
@@ -146,8 +151,8 @@ public class AuthController {
                 cliente.setFotoPerfil(bytesPerfil);
                 cliente.setFotoBanner(bytesBanner);
             }
-            //
-            String codigo = UUID.randomUUID().toString();
+
+            String codigo = UUID.randomUUID().toString(); 
             mail.setCodigo(codigo);
             ubicacion.setCliente(cliente);
             mail.setCliente(cliente);
@@ -163,24 +168,36 @@ public class AuthController {
                 ubicacionService.crearUbicacion(ubicacion);
                 System.out.println("Asociando cliente");
                 usuario.setCliente(cliente);
-                usuario.setActivo(false);
+                usuario.setActivo(true);
                 System.out.println("Registrando usuario");
                 usuarioService.save(usuario);
-                //
+                // MAIL VERIFICATION
                     String fromInternetAdress = mailSuperusuario;
                     String toInternetAdress = cliente.getMail().getMail();
+                    System.out.println("Enviando mail desde "+fromInternetAdress+" hacia "+toInternetAdress);
                     String subject = "Verificar Mail";
                     String link = "http://localhost:8080/auth/validarMail/"+mail.getId()+"/?codigo="+mail.getCodigo();
                     String body = "<div style='width: 100%;'><div style='text-align: center;'><h1 style='font-family: Lucida Console;font-size: 20px;letter-spacing: 0px;word-spacing: 0px;color: #0a0a0a;font-weight: normal;text-decoration: none;font-style: normal;font-variant: normal;text-transform: none;'>EZ Sales - Mail Verification</h1></br><h2 style='font-family: Impact;font-size: 20px;letter-spacing: 0px;word-spacing: 0px;color: #0a0a0a;font-weight: normal;text-decoration: none;font-style: normal;font-variant: small-caps;text-transform: none;'>Para activar su cuenta presione el boton validar a continuacion:<h2></br><a href='"+link+"' style='background:linear-gradient(to bottom, #19ff56 5%, #4cb015 100%);background-color:#19ff56;border-radius:31px;border:1px solid #000000;display:inline-block;cursor:pointer;color:#0a0a0a;font-family:Arial;font-size:23px;font-weight:bold;font-style:italic;padding:12px 44px;text-decoration:none;text-shadow:0px 1px 0px #000000;'>Validar</a></div></div>";
-                    sendMailService.sendCustomMail(fromInternetAdress, toInternetAdress, subject, body);
+                    System.out.println("Enviando mail de verificacion");
+                    //Boolean valor = sendMailService.sendCustomMail(fromInternetAdress, toInternetAdress, subject, body);
+                    Boolean valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
+                    if (valor){
+                        return new ResponseEntity<Mensaje>(new Mensaje("Usuario guardado."), HttpStatus.CREATED);
+                    }else{
+                        ubicacionService.borrarUbicacion(ubicacion.getId());
+                        mailService.borrarMail(mail.getId());
+                        clienteService.borrarCliente(cliente.getId());
+                        usuarioService.delete(usuario);
+                        return new ResponseEntity<Mensaje>(new Mensaje("Error al enviar mail."), HttpStatus.BAD_REQUEST);
+                    }
                 //
-                return new ResponseEntity<Mensaje>(new Mensaje("Usuario guardado."), HttpStatus.CREATED);
             }catch (Exception e){
                 ubicacionService.borrarUbicacion(ubicacion.getId());
                 mailService.borrarMail(mail.getId());
                 clienteService.borrarCliente(cliente.getId());
                 usuarioService.delete(usuario);
-                return new ResponseEntity<Mensaje>(new Mensaje("Error de persistencia: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+                System.out.println("Error al crear usuario: "+ e.getMessage() + ". Causa: " + e. getCause());
+                return new ResponseEntity<Mensaje>(new Mensaje("Error inesperado: " + e.getMessage()), HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
             return new ResponseEntity<Mensaje>(new Mensaje("Error inesperado: " + e.getMessage()), HttpStatus.BAD_REQUEST);

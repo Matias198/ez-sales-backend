@@ -8,8 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.Table;  
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.unam.tf.security.entity.UsuarioJwt;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,21 +26,28 @@ public class Cliente implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty("id")
     private Long id;
+    @JsonProperty("nombre")
     private String nombre;
-    private String apellido;
-    @JsonIgnore
-    private byte[] fotoPerfil;
-    @JsonIgnore
+    @JsonProperty("apellido")
+    private String apellido; 
+    @JsonProperty("fotoPerfil")
+    private byte[] fotoPerfil; 
+    @JsonProperty("fotoBanner")
     private byte[] fotoBanner;
 
+    @JsonProperty("mail")
     @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Mail mail;
 
+    @JsonProperty("ubicacion")
     @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Ubicacion ubicacion;
 
+    @JsonProperty("usuariojwt")
     @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private UsuarioJwt usuariojwt;
 
+    
 }
