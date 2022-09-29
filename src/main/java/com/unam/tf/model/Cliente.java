@@ -8,7 +8,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
-import javax.persistence.Table;  
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.unam.tf.security.entity.UsuarioJwt;
 import lombok.AllArgsConstructor;
@@ -32,9 +34,9 @@ public class Cliente implements Serializable {
     private String nombre;
     @JsonProperty("apellido")
     private String apellido; 
-    @JsonProperty("fotoPerfil")
+    @JsonIgnore
     private byte[] fotoPerfil; 
-    @JsonProperty("fotoBanner")
+    @JsonIgnore
     private byte[] fotoBanner;
 
     @JsonProperty("mail")
