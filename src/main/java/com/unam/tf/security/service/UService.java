@@ -1,7 +1,7 @@
 package com.unam.tf.security.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unam.tf.model.Cliente;
+import com.unam.tf.model.cliente.Cliente;
 import com.unam.tf.security.dto.NuevoUsuario;
 import com.unam.tf.security.entity.UsuarioJwt;
 import com.unam.tf.security.repository.URepository;

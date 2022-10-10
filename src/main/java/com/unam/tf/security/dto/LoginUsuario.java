@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class LoginUsuario {
     @NotBlank
-    private Long dni;
+    private Long dniUser;
     @NotBlank
-    private String password;
+    private String pass;
 }

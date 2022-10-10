@@ -1,8 +1,9 @@
 package com.unam.tf.security.controller;
 
-import com.unam.tf.model.Cliente;
-import com.unam.tf.model.Mail;
-import com.unam.tf.model.Ubicacion; 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unam.tf.model.cliente.Cliente; 
+import com.unam.tf.model.dto.FormularioDto; 
+import com.unam.tf.model.mail.Mail; 
 import com.unam.tf.security.dto.JwtDto;
 import com.unam.tf.security.dto.LoginUsuario; 
 import com.unam.tf.security.dto.Mensaje;
@@ -13,11 +14,12 @@ import com.unam.tf.security.enums.RolNombre;
 import com.unam.tf.security.jwt.JwtProvider;
 import com.unam.tf.security.service.RolService;
 import com.unam.tf.security.service.UService;
-import com.unam.tf.service.ClienteService;
-import com.unam.tf.service.MailService;
-import com.unam.tf.service.SendMailService;
-import com.unam.tf.service.UbicacionService;
+import com.unam.tf.service.cliente.ClienteService;
+import com.unam.tf.service.mail.MailService;
+import com.unam.tf.service.mail.SendMailService;
+import com.unam.tf.service.ubicacion.CiudadService;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -77,40 +79,50 @@ public class AuthController {
     MailService mailService;
 
     @Autowired
-    UbicacionService ubicacionService;
+    CiudadService ciudadService;
 
     @Autowired
     SendMailService sendMailService;
  
     @RequestMapping(value = "nuevoUsuario", method = RequestMethod.POST, consumes = {"multipart/form-data"})
     @ResponseBody   
-    public ResponseEntity<?> nuevoUsuario(@RequestPart String clienteJson, @RequestPart String mailJson, @RequestPart String ubicacionJson, @RequestPart String nuevoUsuarioJson, @RequestPart MultipartFile fotoP, @RequestPart MultipartFile fotoB, BindingResult bindingResult) {
+    public ResponseEntity<?> nuevoUsuario(@RequestPart String formularioJson, @RequestPart MultipartFile fotoP, @RequestPart MultipartFile fotoB, BindingResult bindingResult) {
         try {
-            System.out.println(clienteJson);
-            System.out.println(mailJson);
-            System.out.println(ubicacionJson);
-            System.out.println(nuevoUsuarioJson);
+
+            ObjectMapper mapper = new ObjectMapper();
+            FormularioDto formularioDto = mapper.readValue(formularioJson, FormularioDto.class);
+
+            if (formularioDto.getNombreCliente().equals("")||
+                formularioDto.getApellidoCliente().equals("")||
+                formularioDto.getMail().equals("")||
+                formularioDto.getNombreCiudad().equals("")||
+                formularioDto.getPassword().equals("")||
+                formularioDto.getRol().equals("")){
+                return new ResponseEntity<Mensaje>(new Mensaje("Campos vacíos."), HttpStatus.BAD_REQUEST); 
+            }
+
+            System.out.println(formularioJson); 
             System.out.println(fotoP);
-            System.out.println(fotoB);
+            System.out.println(fotoB);  
 
-            Cliente clienteTemp = new Cliente();
-            Mail mailTemp = new Mail();
-            Ubicacion ubicacionTemp = new Ubicacion();
+            System.out.println("Mapeando clienteJson --> cliente"); 
+            Cliente cliente = new Cliente();
+            cliente.setNombre(formularioDto.getNombreCliente());
+            cliente.setApellido(formularioDto.getApellidoCliente()); 
+            cliente.setCiudad(ciudadService.buscarCiudad(formularioDto.getCodCiudad()));
 
-            System.out.println("Mapeando clienteJson --> cliente");
-            Cliente cliente = clienteService.getClienteJson(clienteJson);
-            cliente.setId(clienteTemp.getId());
+            System.out.println("Mapeando mailJson --> mail"); 
+            Mail mail = new Mail();
+            mail.setMail(formularioDto.getMail());  
 
-            System.out.println("Mapeando ubicacionJson --> ubicacion");
-            Ubicacion ubicacion = ubicacionService.getUbicacionJson(ubicacionJson);
-            ubicacion.setId(ubicacionTemp.getId());
+            System.out.println("Mapeando nuevoUsuarioJson --> nuevoUsuario");
+            NuevoUsuario nuevoUsuario = new NuevoUsuario();
+            nuevoUsuario.setDni(formularioDto.getDni()); 
+            nuevoUsuario.setPassword(formularioDto.getPassword());
+            Set<String> roles2 = new HashSet<>();
+            roles2.add(formularioDto.getRol());
+            nuevoUsuario.setRoles(roles2);          
 
-            System.out.println("Mapeando mailJson --> mail");
-            Mail mail = mailService.getMailJson(mailJson);
-            mail.setId(mailTemp.getId());
-
-            NuevoUsuario nuevoUsuario = usuarioService.getNuevoUsuarioJson(nuevoUsuarioJson); 
-            nuevoUsuario.getDni();
             System.out.println("Verificando errores en los campos");
             if (bindingResult.hasErrors()) {
                 return new ResponseEntity<Mensaje>(new Mensaje("Error en los campos."), HttpStatus.BAD_REQUEST);
@@ -123,8 +135,7 @@ public class AuthController {
             UsuarioJwt usuario = new UsuarioJwt(nuevoUsuario.getDni(), passwordEncoder.encode(nuevoUsuario.getPassword()), null);
             
             System.out.println("Registrando roles");
-            Set<Rol> roles = new HashSet<>();
-            roles.add(rolService.getByRolNombre(RolNombre.ROL_CLIENTE).get());
+            Set<Rol> roles = new HashSet<>(); 
             
             if (nuevoUsuario.getRoles().contains("administrador")) {
                 roles.add(rolService.getByRolNombre(RolNombre.ROL_ADMINISTRADOR).get());
@@ -144,28 +155,26 @@ public class AuthController {
             usuario.setRoles(roles);                           
             
 
-            if ((!fotoP.isEmpty()) && (!fotoB.isEmpty())) {
+            if ((!fotoP.isEmpty()) && (!fotoB.isEmpty())) { 
 
                 byte[] bytesPerfil = fotoP.getBytes();
                 byte[] bytesBanner = fotoB.getBytes();
                 cliente.setFotoPerfil(bytesPerfil);
                 cliente.setFotoBanner(bytesBanner);
+            }else{
+                return new ResponseEntity<Mensaje>(new Mensaje("No se reconocen las imagenes ingresadas o está vacio."), HttpStatus.BAD_REQUEST); 
             }
 
             String codigo = UUID.randomUUID().toString(); 
-            mail.setCodigo(codigo);
-            ubicacion.setCliente(cliente);
+            mail.setCodigo(codigo); 
             mail.setCliente(cliente);
             cliente.setUsuariojwt(usuario); 
-            cliente.setMail(mail);
-            cliente.setUbicacion(ubicacion);
+            cliente.setMail(mail); 
             try{
                 System.out.println("Creando cliente");
                 clienteService.crearCliente(cliente);
                 System.out.println("Creando mail");
-                mailService.crearMail(mail);
-                System.out.println("Creando ubicacion");
-                ubicacionService.crearUbicacion(ubicacion);
+                mailService.crearMail(mail); 
                 System.out.println("Asociando cliente");
                 usuario.setCliente(cliente);
                 usuario.setActivo(false);
@@ -180,20 +189,19 @@ public class AuthController {
                     String link = "https://ez-sales-api.herokuapp.com/auth/validarMail/"+mail.getId()+"/?codigo="+mail.getCodigo();
                     String body = "<div style='width: 100%;'><div style='text-align: center;'><h1 style='font-family: Lucida Console;font-size: 20px;letter-spacing: 0px;word-spacing: 0px;color: #0a0a0a;font-weight: normal;text-decoration: none;font-style: normal;font-variant: normal;text-transform: none;'>EZ Sales - Mail Verification</h1></br><h2 style='font-family: Impact;font-size: 20px;letter-spacing: 0px;word-spacing: 0px;color: #0a0a0a;font-weight: normal;text-decoration: none;font-style: normal;font-variant: small-caps;text-transform: none;'>Para activar su cuenta presione el boton validar a continuacion:<h2></br><a href='"+link+"' style='background:linear-gradient(to bottom, #19ff56 5%, #4cb015 100%);background-color:#19ff56;border-radius:31px;border:1px solid #000000;display:inline-block;cursor:pointer;color:#0a0a0a;font-family:Arial;font-size:23px;font-weight:bold;font-style:italic;padding:12px 44px;text-decoration:none;text-shadow:0px 1px 0px #000000;'>Validar</a></div></div>";
                     System.out.println("Enviando mail de verificacion");
+                    boolean valor = true;
                     //Boolean valor = sendMailService.sendCustomMail(fromInternetAdress, toInternetAdress, subject, body);
-                    Boolean valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
-                    if (valor){
+                    //Boolean valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
+                    //if (true){
                         return new ResponseEntity<Mensaje>(new Mensaje("Usuario guardado."), HttpStatus.CREATED);
-                    }else{
-                        ubicacionService.borrarUbicacion(ubicacion.getId());
+                    /*}else{
                         mailService.borrarMail(mail.getId());
                         clienteService.borrarCliente(cliente.getId());
                         usuarioService.delete(usuario);
                         return new ResponseEntity<Mensaje>(new Mensaje("Error al enviar mail."), HttpStatus.BAD_REQUEST);
-                    }
+                    }*/
                 //
-            }catch (Exception e){
-                ubicacionService.borrarUbicacion(ubicacion.getId());
+            }catch (Exception e){ 
                 mailService.borrarMail(mail.getId());
                 clienteService.borrarCliente(cliente.getId());
                 usuarioService.delete(usuario);
@@ -211,8 +219,8 @@ public class AuthController {
             if (bindingResult.hasErrors()) {
                 return new ResponseEntity<Mensaje>(new Mensaje("Error en los campos."), HttpStatus.BAD_REQUEST);
             }
-            if (usuarioService.getUsuarioByDni(loginUsuario.getDni()).get().getActivo()){
-                Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginUsuario.getDni(), loginUsuario.getPassword()));
+            if (usuarioService.getUsuarioByDni(loginUsuario.getDniUser()).get().getActivo()){
+                Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginUsuario.getDniUser(), loginUsuario.getPass()));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 String jwt = jwtProvider.generateToken(authentication);
                 UserDetails userDetails = (UserDetails) authentication.getPrincipal();

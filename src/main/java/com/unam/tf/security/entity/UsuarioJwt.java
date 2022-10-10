@@ -2,9 +2,10 @@ package com.unam.tf.security.entity;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore; 
 import com.sun.istack.NotNull;
-import com.unam.tf.model.Cliente;
+import com.unam.tf.model.cliente.Cliente;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,22 +32,18 @@ public class UsuarioJwt implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotNull
     private Long dniUsuario;
-    @NotNull @JsonIgnore
+    @JsonIgnore
     private String password;
-    @NotNull
     private Boolean activo;
     
-    @NotNull
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "usuario_rol", joinColumns = @JoinColumn(name = "id_usuario"), inverseJoinColumns = @JoinColumn(name = "id_rol"))
     private Set<Rol> roles = new HashSet<>();
 
-    @NotNull
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cliente_id", referencedColumnName = "id")
-    @JsonBackReference
+    @JsonBackReference("usuariojwt")
     private Cliente cliente;
 
     public UsuarioJwt() {
