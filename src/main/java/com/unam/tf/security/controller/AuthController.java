@@ -191,15 +191,15 @@ public class AuthController {
                     System.out.println("Enviando mail de verificacion");
                     boolean valor = true;
                     //Boolean valor = sendMailService.sendCustomMail(fromInternetAdress, toInternetAdress, subject, body);
-                    //Boolean valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
-                    //if (true){
+                    valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
+                    if (valor){
                         return new ResponseEntity<Mensaje>(new Mensaje("Usuario guardado."), HttpStatus.CREATED);
-                    /*}else{
+                    }else{
                         mailService.borrarMail(mail.getId());
                         clienteService.borrarCliente(cliente.getId());
                         usuarioService.delete(usuario);
                         return new ResponseEntity<Mensaje>(new Mensaje("Error al enviar mail."), HttpStatus.BAD_REQUEST);
-                    }*/
+                    }
                 //
             }catch (Exception e){ 
                 mailService.borrarMail(mail.getId());
