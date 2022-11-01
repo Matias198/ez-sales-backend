@@ -11,6 +11,6 @@ public interface IProductoService {
 
     public Producto buscarProducto(Long id);
 
-    public List<Producto> buscarTodasLasProductos(); 
+    public List<Producto> buscarTodosLosProductos(); 
     
 }

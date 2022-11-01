@@ -19,7 +19,6 @@ import com.unam.tf.service.mail.MailService;
 import com.unam.tf.service.mail.SendMailService;
 import com.unam.tf.service.ubicacion.CiudadService;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -177,9 +176,7 @@ public class AuthController {
                 mailService.crearMail(mail); 
                 System.out.println("Asociando cliente");
                 usuario.setCliente(cliente);
-                usuario.setActivo(false);
-                System.out.println("Registrando usuario");
-                usuarioService.save(usuario);
+                usuario.setActivo(true); 
                 // MAIL VERIFICATION
                     String fromInternetAdress = mailSuperusuario;
                     String toInternetAdress = cliente.getMail().getMail();
@@ -191,7 +188,9 @@ public class AuthController {
                     System.out.println("Enviando mail de verificacion");
                     boolean valor = true;
                     //Boolean valor = sendMailService.sendCustomMail(fromInternetAdress, toInternetAdress, subject, body);
-                    valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
+                    //valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
+                    System.out.println("Registrando usuario");
+                    usuarioService.save(usuario);
                     if (valor){
                         return new ResponseEntity<Mensaje>(new Mensaje("Usuario guardado."), HttpStatus.CREATED);
                     }else{

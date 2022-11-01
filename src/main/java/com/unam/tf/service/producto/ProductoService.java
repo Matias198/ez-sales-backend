@@ -5,34 +5,35 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.unam.tf.model.tienda.Tienda;
-import com.unam.tf.repository.tienda.TiendaRepository;
-import com.unam.tf.service.tienda.ITiendaService;
+import com.unam.tf.model.producto.Producto;
+import com.unam.tf.repository.producto.ProductoRepository; 
 
 @Service
-public class ProductoService implements ITiendaService{
+public class ProductoService implements IProductoService{
 
     @Autowired
-    TiendaRepository tiendaRepository;
+    ProductoRepository productoRepository;
 
     @Override
-    public void crearTienda(Tienda tienda) {
-        tiendaRepository.save(tienda);
+    public void crearProducto(Producto producto) {
+        productoRepository.save(producto);
     }
 
     @Override
-    public void borrarTienda(Long id) {
-        tiendaRepository.deleteById(id);
+    public void borrarProducto(Long id) {
+        productoRepository.deleteById(id);
     }
 
     @Override
-    public Tienda buscarTienda(Long id) {
-        return tiendaRepository.findById(id).orElse(null);
+    public Producto buscarProducto(Long id) {
+        return productoRepository.findById(id).orElse(null);
     }
 
     @Override
-    public List<Tienda> buscarTodasLasTiendas() {
-        return tiendaRepository.findAll();
+    public List<Producto> buscarTodosLosProductos() {
+        return productoRepository.findAll();
     }
+
+    
     
 }

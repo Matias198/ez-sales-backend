@@ -2,8 +2,7 @@ package com.unam.tf.security.entity;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore; 
-import com.sun.istack.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;  
 import com.unam.tf.model.cliente.Cliente;
 
 import java.io.Serializable;

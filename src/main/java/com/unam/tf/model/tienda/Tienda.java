@@ -39,18 +39,22 @@ public class Tienda {
     private Long id;
     private String nombre;
     private String rubro;
-    private byte[] fotoPerfil;
-    private Long valoracionTotalPromedio; 
+    private Long valoracionTotalPromedio = 0L; 
     private String contacto;   
-    private Boolean servicioEnvio;
-    private Boolean activo;
+    private Boolean servicioEnvio = false;
+    private Boolean activo = true;
     
     @OneToMany(mappedBy = "tienda", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference 
     private Set<Producto> productos;
 
+    @OneToMany(mappedBy = "tienda", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference 
+    private Set<FotosTienda> fotos;
+
     @JsonProperty("ubicacion")
     @OneToOne(mappedBy = "tienda", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference("ubicacion")
     private Ubicacion ubicacion;
 
     @ManyToOne() 

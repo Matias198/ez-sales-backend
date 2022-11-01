@@ -1,5 +1,6 @@
 package com.unam.tf.model.producto;
  
+import java.time.LocalDate;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -23,7 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
+@Setter 
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -34,19 +35,23 @@ public class Producto {
     private Long id;
     private String nombre;
     private Long precio;
-    private Long descuento;
+    private Long descuento = 0L;
     private Long cantidad;
+    private Long cantidadCritica;
     private String descripcion;
-    private String[][] caracteristicas; 
+    private LocalDate caducidad; 
     //caracteristicas[0][0]: Marca;
     //caracteristicas[0][1]: Samsung;
     //resultado -> Marca: Samsung;
-    private byte[] imagen;
     private Boolean activo;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Set<Reseña> reseñas;
+
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("fotos")
+    private Set<FotosProducto> fotos;
 
     @ManyToOne() 
     @JoinColumn(name = "tienda_id", referencedColumnName = "id") 

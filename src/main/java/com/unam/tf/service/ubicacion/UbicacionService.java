@@ -26,9 +26,10 @@ public class UbicacionService implements IUbicacionService{
 
     @Override
     public void borrarUbicacionLogico(Long id){
-        Ubicacion temp = ubicacionRepository.findById(id).get();
-        temp.setActivo(false);
-        ubicacionRepository.save(temp);
+        //Ubicacion temp = ubicacionRepository.findById(id).get();
+        //temp.setActivo(false);
+        //ubicacionRepository.save(temp);
+        System.out.println("Eliminado");
     }
 
     @Override

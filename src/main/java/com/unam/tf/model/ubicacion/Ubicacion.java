@@ -12,7 +12,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
- 
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.unam.tf.model.tienda.Tienda;
 
@@ -31,11 +32,13 @@ public class Ubicacion implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String coordenadas;
-    private Boolean activo;
+    private String latitud;
+    private String longitud;
+    //private Boolean activo;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "tienda_id", referencedColumnName = "id")
+    @JsonBackReference("ubicacion")
     private Tienda tienda;
 
     @ManyToOne() 

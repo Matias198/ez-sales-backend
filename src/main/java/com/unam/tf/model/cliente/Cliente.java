@@ -13,11 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.persistence.Table; 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.unam.tf.model.mail.Mail;
 import com.unam.tf.model.tienda.Tienda;
@@ -40,10 +36,8 @@ public class Cliente implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nombre;
-    private String apellido;  
-    @JsonIgnore
-    private byte[] fotoPerfil; 
-    @JsonIgnore
+    private String apellido;
+    private byte[] fotoPerfil;
     private byte[] fotoBanner;
 
     @OneToOne(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -61,6 +55,6 @@ public class Cliente implements Serializable {
     
     @ManyToOne() 
     @JoinColumn(name = "ciudad_id", referencedColumnName = "codCiudad")  
-    @JsonBackReference("clientes") 
+    @JsonManagedReference("clientes") 
     private Ciudad ciudad;
 }

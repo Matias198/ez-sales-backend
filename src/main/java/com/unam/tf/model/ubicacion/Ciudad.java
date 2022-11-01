@@ -3,15 +3,12 @@ package com.unam.tf.model.ubicacion;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
+import javax.persistence.Entity; 
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import javax.persistence.OneToMany; 
+import javax.persistence.Table; 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -45,6 +42,6 @@ public class Ciudad {
     private Provincia provincia;
 
     @OneToMany(mappedBy = "ciudad", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference("clientes")
+    @JsonBackReference("clientes")
     private Set<Cliente> clientes;
 }
