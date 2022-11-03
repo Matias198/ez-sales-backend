@@ -215,8 +215,9 @@ public class ClienteController {
                         String toInternetAdress = cliente.getMail().getMail();
                         System.out.println("Enviando mail desde "+fromInternetAdress+" hacia "+toInternetAdress);
                         String subject = "Verificar Mail";
-                        String link = "http://localhost:8080/auth/validarMail/"+mail.getId()+"/?codigo="+mail.getCodigo();
+                        //String link = "http://localhost:8080/auth/validarMail/"+mail.getId()+"/?codigo="+mail.getCodigo();
                         //String link = "https://ez-sales-api.herokuapp.com/auth/validarMail/"+mail.getId()+"/?codigo="+mail.getCodigo();
+                        String link = "https://ez-sales.web.app/verificar-mail/"+mail.getId()+"/"+mail.getCodigo();
                         String body = "<div style='width: 100%;'><div style='text-align: center;'><h1 style='font-family: Lucida Console;font-size: 20px;letter-spacing: 0px;word-spacing: 0px;color: #0a0a0a;font-weight: normal;text-decoration: none;font-style: normal;font-variant: normal;text-transform: none;'>EZ Sales - Mail Verification</h1></br><h2 style='font-family: Impact;font-size: 20px;letter-spacing: 0px;word-spacing: 0px;color: #0a0a0a;font-weight: normal;text-decoration: none;font-style: normal;font-variant: small-caps;text-transform: none;'>Para activar su cuenta presione el boton validar a continuacion:<h2></br><a href='"+link+"' style='background:linear-gradient(to bottom, #19ff56 5%, #4cb015 100%);background-color:#19ff56;border-radius:31px;border:1px solid #000000;display:inline-block;cursor:pointer;color:#0a0a0a;font-family:Arial;font-size:23px;font-weight:bold;font-style:italic;padding:12px 44px;text-decoration:none;text-shadow:0px 1px 0px #000000;'>Validar</a></div></div>";
                         System.out.println("Enviando mail de verificacion");
                         //Boolean valor = sendMailService.sendCustomMail(fromInternetAdress, toInternetAdress, subject, body);
