@@ -19,7 +19,9 @@ import com.unam.tf.service.mail.MailService;
 import com.unam.tf.service.mail.SendMailService;
 import com.unam.tf.service.ubicacion.CiudadService;
 
+import java.net.URISyntaxException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
  
@@ -176,19 +178,20 @@ public class AuthController {
                 mailService.crearMail(mail); 
                 System.out.println("Asociando cliente");
                 usuario.setCliente(cliente);
-                usuario.setActivo(true); 
+                usuario.setActivo(false); 
                 // MAIL VERIFICATION
                     String fromInternetAdress = mailSuperusuario;
                     String toInternetAdress = cliente.getMail().getMail();
                     System.out.println("Enviando mail desde "+fromInternetAdress+" hacia "+toInternetAdress);
                     String subject = "Verificar Mail";
                     //String link = "http://localhost:8080/auth/validarMail/"+mail.getId()+"/?codigo="+mail.getCodigo();
-                    String link = "https://ez-sales-api.herokuapp.com/auth/validarMail/"+mail.getId()+"/?codigo="+mail.getCodigo();
+                    //String link = "https://ez-sales-api.herokuapp.com/auth/validarMail/"+mail.getId()+"/?codigo="+mail.getCodigo();
+                    String link = "http://localhost:4200/verificar-mail/"+mail.getId()+"/"+mail.getCodigo();
                     String body = "<div style='width: 100%;'><div style='text-align: center;'><h1 style='font-family: Lucida Console;font-size: 20px;letter-spacing: 0px;word-spacing: 0px;color: #0a0a0a;font-weight: normal;text-decoration: none;font-style: normal;font-variant: normal;text-transform: none;'>EZ Sales - Mail Verification</h1></br><h2 style='font-family: Impact;font-size: 20px;letter-spacing: 0px;word-spacing: 0px;color: #0a0a0a;font-weight: normal;text-decoration: none;font-style: normal;font-variant: small-caps;text-transform: none;'>Para activar su cuenta presione el boton validar a continuacion:<h2></br><a href='"+link+"' style='background:linear-gradient(to bottom, #19ff56 5%, #4cb015 100%);background-color:#19ff56;border-radius:31px;border:1px solid #000000;display:inline-block;cursor:pointer;color:#0a0a0a;font-family:Arial;font-size:23px;font-weight:bold;font-style:italic;padding:12px 44px;text-decoration:none;text-shadow:0px 1px 0px #000000;'>Validar</a></div></div>";
                     System.out.println("Enviando mail de verificacion");
                     boolean valor = true;
                     //Boolean valor = sendMailService.sendCustomMail(fromInternetAdress, toInternetAdress, subject, body);
-                    //valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
+                    valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
                     System.out.println("Registrando usuario");
                     usuarioService.save(usuario);
                     if (valor){
@@ -253,4 +256,27 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/mail/obtenerMailByAddress/")
+    public ResponseEntity<?> obtenerMailByAddress(@RequestParam String correo) throws URISyntaxException {
+        try {
+            List<Mail> correos = mailService.buscarTodosLosMail();
+            for (int i = 0; i < correos.size(); i++) {
+                if (correos.get(i).getMail().equals(correo)){
+                    return new ResponseEntity<Mail>(correos.get(i), HttpStatus.OK);
+                }
+            }
+            return new ResponseEntity<Mensaje>(new Mensaje("No se encuentra el mail"), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<Mensaje>(new Mensaje("Error al obtener mail: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/mail/obtenerMailById/{id}/")
+    public ResponseEntity<?> obtenerMailById(@PathVariable Long id) throws URISyntaxException {
+        try {
+            return new ResponseEntity<Mail>(mailService.buscarMail(id), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<Mensaje>(new Mensaje("Error al obtener mail: " + e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    } 
 }

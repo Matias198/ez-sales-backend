@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.unam.tf.model.mail.Mail;
@@ -33,16 +35,7 @@ public class MailController {
         } catch (Exception e) {
             return new ResponseEntity<Mensaje>(new Mensaje("Error al crear mail: " + e.getMessage()), HttpStatus.BAD_REQUEST);
         }
-    }
-
-    @GetMapping("/mail/obtenerMail/{id}/")
-    public ResponseEntity<?> obtenerMail(@PathVariable Long id) throws URISyntaxException {
-        try {
-            return new ResponseEntity<Mail>(mailService.buscarMail(id), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<Mensaje>(new Mensaje("Error al obtener mail: " + e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-    }
+    } 
 
     @GetMapping("/mail/obtenerTodos")
     public ResponseEntity<?> obtenerTodos(@PathVariable Long id) throws URISyntaxException {

@@ -135,7 +135,30 @@
             <artifactId>spring-boot-starter-mail</artifactId>
             <version>2.7.3</version>
         </dependency>
-                
+
+        <!-- https://mvnrepository.com/artifact/javax.activation/activation -->
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.sun.mail/smtp -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>smtp</artifactId>
+            <version>1.4.4</version>
+        </dependency>
+
+
+
+        <!-- Mercado Pago SDK -->            
+            <dependency>
+            <groupId>com.mercadopago</groupId>
+            <artifactId>sdk-java</artifactId>
+            <version>2.1.2</version>
+            </dependency>    
+        <!---->
     </dependencies>
 
     <build>
