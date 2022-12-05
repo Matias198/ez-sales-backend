@@ -25,6 +25,21 @@ public class FotosProductoService implements IFotosProductoService{
 
     @Override
     public void borrarFotosProducto(Long id) {
+        //fotosProductoRepository.deleteById(id);
+        FotosProducto foto = fotosProductoRepository.findById(id).get();
+        foto.setActivo(false);
+        fotosProductoRepository.save(foto);
+    }
+
+    @Override
+    public void restaurarFotosProducto(Long id){
+        FotosProducto foto = fotosProductoRepository.findById(id).get();
+        foto.setActivo(true);
+        fotosProductoRepository.save(foto);
+    }
+
+    @Override
+    public void borrarFotosProductoPerm(Long id) {
         fotosProductoRepository.deleteById(id);
     }
 

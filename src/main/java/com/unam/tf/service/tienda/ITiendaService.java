@@ -9,6 +9,8 @@ public interface ITiendaService {
 
     public void borrarTienda(Long id);
 
+    public void restaurarTienda(Long id);
+
     public Tienda buscarTienda(Long id);
 
     public List<Tienda> buscarTodasLasTiendas(); 

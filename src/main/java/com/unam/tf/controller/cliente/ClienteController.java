@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,8 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unam.tf.model.cliente.Cliente;
 import com.unam.tf.model.dto.FormularioDto;
 import com.unam.tf.model.mail.Mail;
-import com.unam.tf.model.tienda.Tienda;
-import com.unam.tf.model.ubicacion.Ubicacion;
+import com.unam.tf.model.producto.Categoria;
 import com.unam.tf.security.dto.Mensaje;
 import com.unam.tf.security.entity.UsuarioJwt;
 import com.unam.tf.security.enums.RolNombre;
@@ -38,25 +38,23 @@ import com.unam.tf.security.service.UService;
 import com.unam.tf.service.cliente.IClienteService;
 import com.unam.tf.service.mail.MailService;
 import com.unam.tf.service.mail.SendMailService;
+import com.unam.tf.service.producto.CategoriaService;
 import com.unam.tf.service.ubicacion.CiudadService;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import javax.imageio.ImageIO;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.imageio.ImageIO; 
 
 @RestController
 public class ClienteController {
     
     @Value("${spring.mail.username}")
-    String mailSuperusuario;
+    private String mailSuperusuario;
 
     @Autowired
-    AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
     
     @Autowired
     private IClienteService clienteService;
@@ -74,7 +72,10 @@ public class ClienteController {
     private UService usuarioService;
     
     @Autowired
-    private SendMailService sendMailService;
+    private SendMailService sendMailService; 
+    
+    @Autowired
+    private CategoriaService categoriaService;
 
     @GetMapping("cliente/obtenerUnCliente")
     @ResponseBody
@@ -196,8 +197,8 @@ public class ClienteController {
 
                 /* Invalidando usuario */ 
                 if (mailChanged){
-                    System.out.println("Inactivando usuario");
-                    user.setActivo(false);
+                    //System.out.println("Inactivando usuario");
+                    //user.setActivo(false);
                     /* Invalidando y re creando UUID mail */
                     System.out.println("Setting mail");
                     mail.setValidado(false);
@@ -294,6 +295,32 @@ public class ClienteController {
             }          
         } catch (Exception e) {
             return new ResponseEntity<Mensaje>(new Mensaje("Persona inexistente con DNI: " + dniCliente), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("cliente/agregarPreferencias")
+    @ResponseBody   
+    public ResponseEntity<?> agregarPreferencias(@RequestPart String listaIndicesCat, @RequestParam Long dniCliente, BindingResult bindingResult) {
+        try {
+            System.out.println("Indices: "+listaIndicesCat);
+            System.out.println("DNI Cliente: "+dniCliente); 
+            
+            Set<Categoria> categorias = new HashSet<>();
+            if (!listaIndicesCat.equals("[]")){
+                /* Mapeo la lista de indices de categorias */
+                String str2 = listaIndicesCat.substring(1,listaIndicesCat.length()-1);
+                String split[] = str2.split(",");  
+                
+                for (String indice : split) {
+                    categorias.add(categoriaService.buscarCategoria(Long.valueOf(indice)));
+                }
+            }
+            Cliente cliente = uService.getUsuarioByDni(dniCliente).get().getCliente();
+            cliente.setCategorias(categorias);
+            clienteService.crearCliente(cliente);
+            return new ResponseEntity<Mensaje>(new Mensaje("Guardado"), HttpStatus.OK);    
+        } catch (Exception e) {
+            return new ResponseEntity<Mensaje>(new Mensaje("Error inesperado: " + e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 }

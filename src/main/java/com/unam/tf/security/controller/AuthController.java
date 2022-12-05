@@ -1,35 +1,25 @@
 package com.unam.tf.security.controller;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unam.tf.model.cliente.Cliente; 
-import com.unam.tf.model.dto.FormularioDto; 
-import com.unam.tf.model.mail.Mail; 
-import com.unam.tf.security.dto.JwtDto;
-import com.unam.tf.security.dto.LoginUsuario; 
-import com.unam.tf.security.dto.Mensaje;
-import com.unam.tf.security.dto.NuevoUsuario; 
-import com.unam.tf.security.entity.Rol;
-import com.unam.tf.security.entity.UsuarioJwt;
-import com.unam.tf.security.enums.RolNombre;
-import com.unam.tf.security.jwt.JwtProvider;
-import com.unam.tf.security.service.RolService;
-import com.unam.tf.security.service.UService;
-import com.unam.tf.service.cliente.ClienteService;
-import com.unam.tf.service.mail.MailService;
-import com.unam.tf.service.mail.SendMailService;
-import com.unam.tf.service.ubicacion.CiudadService;
-
+ 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
- 
-import javax.validation.Valid; 
+
+import javax.imageio.ImageIO;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus; 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,7 +29,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping; 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,12 +41,35 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unam.tf.model.cliente.Cliente;
+import com.unam.tf.model.dto.FormularioDto;
+import com.unam.tf.model.mail.Mail;
+import com.unam.tf.model.producto.Categoria;
+import com.unam.tf.security.dto.JwtDto;
+import com.unam.tf.security.dto.LoginUsuario;
+import com.unam.tf.security.dto.Mensaje;
+import com.unam.tf.security.dto.NuevoUsuario;
+import com.unam.tf.security.entity.Rol;
+import com.unam.tf.security.entity.UsuarioJwt;
+import com.unam.tf.security.enums.RolNombre;
+import com.unam.tf.security.jwt.JwtProvider;
+import com.unam.tf.security.service.RolService;
+import com.unam.tf.security.service.UService;
+import com.unam.tf.service.cliente.ClienteService;
+import com.unam.tf.service.mail.MailService;
+import com.unam.tf.service.mail.SendMailService;
+import com.unam.tf.service.ubicacion.CiudadService;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
     @Value("${spring.mail.username}")
     String mailSuperusuario;
+
+    @Value("${app.link.prod}")
+    String linkProd;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -171,6 +184,8 @@ public class AuthController {
             mail.setCliente(cliente);
             cliente.setUsuariojwt(usuario); 
             cliente.setMail(mail); 
+            Set<Categoria> categorias = new HashSet<>(); 
+            cliente.setCategorias(categorias);
             try{
                 System.out.println("Creando cliente");
                 clienteService.crearCliente(cliente);
@@ -178,31 +193,58 @@ public class AuthController {
                 mailService.crearMail(mail); 
                 System.out.println("Asociando cliente");
                 usuario.setCliente(cliente);
-                usuario.setActivo(false); 
+                usuario.setActivo(false);  
+
                 // MAIL VERIFICATION
-                    String fromInternetAdress = mailSuperusuario;
-                    String toInternetAdress = cliente.getMail().getMail();
-                    System.out.println("Enviando mail desde "+fromInternetAdress+" hacia "+toInternetAdress);
-                    String subject = "Verificar Mail";
-                    //String link = "http://localhost:8080/auth/validarMail/"+mail.getId()+"/?codigo="+mail.getCodigo();
-                    //String link = "https://ez-sales-api.herokuapp.com/auth/validarMail/"+mail.getId()+"/?codigo="+mail.getCodigo();
-                    String link = "https://ez-sales.web.app/verificar-mail/"+mail.getId()+"/"+mail.getCodigo();
-                    String body = "<div style='width: 100%;'><div style='text-align: center;'><h1 style='font-family: Lucida Console;font-size: 20px;letter-spacing: 0px;word-spacing: 0px;color: #0a0a0a;font-weight: normal;text-decoration: none;font-style: normal;font-variant: normal;text-transform: none;'>EZ Sales - Mail Verification</h1></br><h2 style='font-family: Impact;font-size: 20px;letter-spacing: 0px;word-spacing: 0px;color: #0a0a0a;font-weight: normal;text-decoration: none;font-style: normal;font-variant: small-caps;text-transform: none;'>Para activar su cuenta presione el boton validar a continuacion:<h2></br><a href='"+link+"' style='background:linear-gradient(to bottom, #19ff56 5%, #4cb015 100%);background-color:#19ff56;border-radius:31px;border:1px solid #000000;display:inline-block;cursor:pointer;color:#0a0a0a;font-family:Arial;font-size:23px;font-weight:bold;font-style:italic;padding:12px 44px;text-decoration:none;text-shadow:0px 1px 0px #000000;'>Validar</a></div></div>";
-                    System.out.println("Enviando mail de verificacion");
-                    boolean valor = true;
-                    //Boolean valor = sendMailService.sendCustomMail(fromInternetAdress, toInternetAdress, subject, body);
-                    valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
-                    System.out.println("Registrando usuario");
-                    usuarioService.save(usuario);
-                    if (valor){
-                        return new ResponseEntity<Mensaje>(new Mensaje("Usuario guardado."), HttpStatus.CREATED);
-                    }else{
-                        mailService.borrarMail(mail.getId());
-                        clienteService.borrarCliente(cliente.getId());
-                        usuarioService.delete(usuario);
-                        return new ResponseEntity<Mensaje>(new Mensaje("Error al enviar mail."), HttpStatus.BAD_REQUEST);
+                String fromInternetAdress = mailSuperusuario;
+                String toInternetAdress = cliente.getMail().getMail();
+                System.out.println("Enviando mail desde "+fromInternetAdress+" hacia "+toInternetAdress);
+                String subject = "Verificar Mail";
+                String link = linkProd + "/verificar-mail/"+mail.getId()+"/"+mail.getCodigo();
+                
+                File archivo = null;
+                FileReader fr = null;
+                BufferedReader br = null;
+                String texto = "";
+                String linea = "";
+                try { 
+                    archivo = new File ("./src/main/resources/mail/mail.txt");
+                    fr = new FileReader (archivo);
+                    br = new BufferedReader(new InputStreamReader(new FileInputStream(archivo), StandardCharsets.UTF_8)); 
+
+                    // Lectura del fichero  
+                    linea=br.readLine();
+                    texto += linea + link;
+                    linea=br.readLine();
+                    texto += linea + mail.getCodigo();
+                    linea=br.readLine();
+                    texto += linea;
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }finally{ 
+                    try{                    
+                        if( null != fr ){   
+                        fr.close();     
+                        }                  
+                    }catch (Exception e2){ 
+                        e2.printStackTrace();
                     }
-                //
+                } 
+                String body = texto; 
+                System.out.println("Enviando mail de verificacion");
+                boolean valor = false;
+                valor = sendMailService.sendCustomMail(toInternetAdress, subject, body);
+                System.out.println("Registrando usuario");
+                usuarioService.save(usuario);
+                if (valor){
+                    return new ResponseEntity<Mensaje>(new Mensaje("Usuario guardado."), HttpStatus.CREATED);
+                }else{
+                    mailService.borrarMail(mail.getId());
+                    clienteService.borrarCliente(cliente.getId());
+                    usuarioService.delete(usuario);
+                    return new ResponseEntity<Mensaje>(new Mensaje("Error al enviar mail."), HttpStatus.BAD_REQUEST);
+                } 
             }catch (Exception e){ 
                 mailService.borrarMail(mail.getId());
                 clienteService.borrarCliente(cliente.getId());
@@ -221,15 +263,19 @@ public class AuthController {
             if (bindingResult.hasErrors()) {
                 return new ResponseEntity<Mensaje>(new Mensaje("Error en los campos."), HttpStatus.BAD_REQUEST);
             }
-            if (usuarioService.getUsuarioByDni(loginUsuario.getDniUser()).get().getActivo()){
-                Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginUsuario.getDniUser(), loginUsuario.getPass()));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                String jwt = jwtProvider.generateToken(authentication);
-                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-                JwtDto jwtDto = new JwtDto(jwt, userDetails.getUsername(), userDetails.getAuthorities());
-                return new ResponseEntity<JwtDto>(jwtDto, HttpStatus.OK);
-            }else{
-                return new ResponseEntity<Mensaje>(new Mensaje("Usuario inactivo."), HttpStatus.BAD_REQUEST);
+            try {
+                if (usuarioService.getUsuarioByDni(loginUsuario.getDniUser()).get().getActivo()){
+                    Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginUsuario.getDniUser(), loginUsuario.getPass()));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    String jwt = jwtProvider.generateToken(authentication);
+                    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                    JwtDto jwtDto = new JwtDto(jwt, userDetails.getUsername(), userDetails.getAuthorities());
+                    return new ResponseEntity<JwtDto>(jwtDto, HttpStatus.OK);
+                }else{
+                    return new ResponseEntity<Mensaje>(new Mensaje("Usuario inactivo."), HttpStatus.BAD_REQUEST);
+                } 
+            } catch (Exception e) {
+                return new ResponseEntity<Mensaje>(new Mensaje("Error al obtener usuario: " + e.getMessage()), HttpStatus.BAD_REQUEST);
             }            
         } catch (AuthenticationException e) {
             return new ResponseEntity<Mensaje>(new Mensaje("Error inesperado: " + e.getMessage()), HttpStatus.BAD_REQUEST);
@@ -279,4 +325,69 @@ public class AuthController {
             return new ResponseEntity<Mensaje>(new Mensaje("Error al obtener mail: " + e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     } 
+
+    @GetMapping("/imagen")
+    public String verImagen(){
+        try { 
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+            System.out.println("ByteArrayOutputStream OK");
+            // serialize the image
+            ImageIO.write(ImageIO.read(new File("./src/main/resources/images/favicon.png")), "png", baos); 
+            System.out.println("ImageIO OK");
+            // convert the written image to a byte[]
+            byte[] bytes = baos.toByteArray();
+            System.out.println("bytes.length " + bytes.length);
+            // THIS IS IT! Change the bytes to Base 64 Binary
+            String data = Base64.getEncoder().encodeToString(bytes);
+            // add the 'data URI prefix' before returning the image as string 
+            return "data:image/png;base64," + data;  
+        } catch (Exception e) {
+            return "Error: " + e.getMessage() +". Causa: " + e.getCause(); 
+        } 
+    }
+
+    @GetMapping("/probarMail")
+    public String enviarMail(){
+        // MAIL VERIFICATION
+        String fromInternetAdress = mailSuperusuario;
+        String toInternetAdress = mailSuperusuario;
+        String codigo = UUID.randomUUID().toString();
+        System.out.println("Enviando mail desde "+fromInternetAdress+" hacia "+toInternetAdress);
+        String subject = "Verificar Mail";
+        String link = linkProd + "/verificar-mail/"+1+"/"+codigo;
+        
+        File archivo = null;
+        FileReader fr = null;
+        BufferedReader br = null;
+        String texto = "";
+        String linea = "";
+        try { 
+            archivo = new File ("./src/main/resources/mail/mail.txt");
+            fr = new FileReader (archivo);
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(archivo), StandardCharsets.UTF_8)); 
+
+            // Lectura del fichero 
+            linea=br.readLine();
+            texto += linea + link;
+            linea=br.readLine();
+            texto += linea + codigo;
+            linea=br.readLine();
+            texto += linea;
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }finally{ 
+            try{                    
+                if( null != fr ){   
+                fr.close();     
+                }                  
+            }catch (Exception e2){ 
+                e2.printStackTrace();
+            }
+        } 
+        String body = texto; 
+        System.out.println("Enviando mail de verificacion");
+        sendMailService.sendCustomMail(toInternetAdress, subject, body);
+        return "OK";
+    }
 }

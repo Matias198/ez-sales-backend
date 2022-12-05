@@ -1,15 +1,15 @@
 package com.unam.tf.model.producto;
 
+import java.util.Set;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.Id; 
+import javax.persistence.ManyToMany; 
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.unam.tf.model.cliente.Cliente;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,21 +17,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
+@Setter 
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "fotos_producto")
-public class FotosProducto {
+@Table(name = "categoria") 
+public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private byte[] foto;
+    private String nombre;
     private Boolean activo;
 
-    @ManyToOne() 
-    @JoinColumn(name = "producto_id", referencedColumnName = "id") 
-    @JsonBackReference("fotos")
-    @NotNull
-    private Producto producto;
+    @ManyToMany() 
+    private Set<Producto> productos;
+
+    @ManyToMany() 
+    private Set<Cliente> clientes;
 }

@@ -27,6 +27,7 @@ public class FotosTienda {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private byte[] foto;
+    private Boolean activo = true;
 
     @ManyToOne() 
     @JoinColumn(name = "tienda_id", referencedColumnName = "id") 

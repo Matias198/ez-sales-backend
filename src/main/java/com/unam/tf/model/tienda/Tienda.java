@@ -3,6 +3,7 @@ package com.unam.tf.model.tienda;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -18,7 +19,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonBackReference; 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty; 
-import com.unam.tf.model.cliente.Cliente;
+import com.unam.tf.model.cliente.Cliente; 
 import com.unam.tf.model.producto.Producto;
 import com.unam.tf.model.ubicacion.Ubicacion;
 
@@ -38,7 +39,9 @@ public class Tienda {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nombre;
-    private String rubro;
+
+    @Column(columnDefinition="text")
+    private String descripcion; 
     private Long valoracionTotalPromedio = 0L; 
     private String contacto;   
     private Boolean servicioEnvio = false;
@@ -50,7 +53,7 @@ public class Tienda {
 
     @OneToMany(mappedBy = "tienda", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference 
-    private Set<FotosTienda> fotos;
+    private Set<FotosTienda> fotos; 
 
     @JsonProperty("ubicacion")
     @OneToOne(mappedBy = "tienda", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

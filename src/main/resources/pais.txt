@@ -1,0 +1,2 @@
+INSERT INTO "pais" ("cod_pais", "nombre", "eliminado") VALUES
+(1, 'Argentina', false);

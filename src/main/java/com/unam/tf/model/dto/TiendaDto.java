@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TiendaDto {  
     private String nombre;
-    private String rubro;
+    private String descripcion;
     private String contacto;
     private Long codCiudad; 
     private Long dniCliente;

@@ -21,7 +21,22 @@ public class TiendaService implements ITiendaService {
 
     @Override
     public void borrarTienda(Long id) {
-        tiendaRepository.deleteById(id); 
+        Tienda tienda = buscarTienda(id);
+        if (tienda != null){
+            tienda.setActivo(false);
+            tiendaRepository.save(tienda);
+        }
+        //tiendaRepository.deleteById(id); 
+    }
+
+    @Override
+    public void restaurarTienda(Long id) {
+        Tienda tienda = buscarTienda(id);
+        if (tienda != null){
+            tienda.setActivo(true);
+            tiendaRepository.save(tienda);
+        }
+        //tiendaRepository.deleteById(id); 
     }
 
     @Override

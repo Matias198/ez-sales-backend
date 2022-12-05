@@ -21,7 +21,10 @@ public class ProductoService implements IProductoService{
 
     @Override
     public void borrarProducto(Long id) {
-        productoRepository.deleteById(id);
+        //productoRepository.deleteById(id);
+        Producto producto = productoRepository.findById(id).get();
+        producto.setActivo(false);
+        productoRepository.save(producto);
     }
 
     @Override

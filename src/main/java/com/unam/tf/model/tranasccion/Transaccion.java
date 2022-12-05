@@ -1,6 +1,7 @@
-package com.unam.tf.model.producto;
+package com.unam.tf.model.tranasccion;
 
-import javax.persistence.Column;
+import java.time.LocalDate;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -8,9 +9,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.unam.tf.model.cliente.Cliente;
+import com.unam.tf.model.producto.Producto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,25 +24,26 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "reseña")
-public class Reseña {
+@Table(name = "transaccion")
+public class Transaccion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @Column(columnDefinition="text")
-    private String descripcion;
-    //Valores del 1 al 10:
-    private Integer satisfaccionProducto; 
-    private Integer satisfaccionPrecio;
-    private Integer satisfaccionAtencion;
-    //--------------------
-    private Long valoracionLocal;
-    private Boolean activo;
-    
+    private Long id; 
+ 
+    @ManyToOne() 
+    @JoinColumn(name = "cliente_id", referencedColumnName = "id") 
+    @JsonBackReference(value = "tr") 
+    private Cliente cliente;
+         
     @ManyToOne() 
     @JoinColumn(name = "producto_id", referencedColumnName = "id") 
-    @JsonBackReference
-    @NotNull
-    private Producto producto;
+    @JsonBackReference(value = "tr_prod") 
+    private Producto producto;  
+
+    private Long cantidad;
+    private Long precioUnitario;
+    private LocalDate fecha;
+    private Long totalTransaccion; 
+    private Boolean activo; 
+
 }
